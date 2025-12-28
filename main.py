@@ -1,5 +1,5 @@
 from pathlib import Path
-import loguru
+from loguru import logger
 # TODO: make logs
 
 TELEGAM_DIR = r"C:\Users\user\Downloads\Telegram Desktop"
@@ -87,18 +87,23 @@ files = [f for f in Path(TELEGAM_DIR).iterdir() if f.is_file()]
 
 
 def sort_files(files: list):
+    
     files_sorted_by_types = {t: [] for t in TYPES.keys()}
-    for type in TYPES.keys():
-        for file in files:
+    temp_files = []
+
+    for file in files:
+        for type in TYPES.keys():
             if Path(file).suffix in TYPES[type]:
                 files_sorted_by_types[type].append(file)
-                files.remove(file)
-                loguru.logger.debug(f"{file}")
+                logger.debug(f"File {file} moved to {type} dir")
+                break
+        else:
+            temp_files.append(file)           
 
-    if files:
-        for file in files:
+    if temp_files:
+        for file in temp_files:
             files_sorted_by_types["others"].append(file)
-            loguru.logger.warning(f"{file}")
+            logger.warning(f"{file}")
             
     return files_sorted_by_types
 
@@ -109,7 +114,7 @@ def create_folders():
         try:
             Path(folder).mkdir()
         except Exception as e:
-            print(e)
+            logger.warning(f"{e}")
 
 
 def move_files(files: dict):
